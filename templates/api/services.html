@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+
+{% block title %}Services API Testing - MyRider{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Services API Testing</h1>
+    
+    <!-- Categories Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Categories</h2>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <button class="btn btn-primary" onclick="listCategories()">List Categories</button>
+                <button class="btn btn-success" onclick="showCategoryForm()">Add Category</button>
+            </div>
+            <div id="categoryForm" style="display: none;">
+                <form id="addCategoryForm" class="mb-3">
+                    <div class="form-group">
+                        <label for="categoryName">Name</label>
+                        <input type="text" class="form-control" id="categoryName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="categoryDescription">Description</label>
+                        <textarea class="form-control" id="categoryDescription"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+            <div id="categoriesList"></div>
+        </div>
+    </div>
+
+    <!-- Services Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Services</h2>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <button class="btn btn-primary" onclick="listServices()">List Services</button>
+                <button class="btn btn-success" onclick="showServiceForm()">Add Service</button>
+                <button class="btn btn-info" onclick="showSearchForm()">Search Services</button>
+            </div>
+            <div id="serviceForm" style="display: none;">
+                <form id="addServiceForm" class="mb-3">
+                    <div class="form-group">
+                        <label for="serviceName">Name</label>
+                        <input type="text" class="form-control" id="serviceName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceDescription">Description</label>
+                        <textarea class="form-control" id="serviceDescription"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="servicePrice">Price</label>
+                        <input type="number" class="form-control" id="servicePrice" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceCategory">Category</label>
+                        <select class="form-control" id="serviceCategory" required></select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+            <div id="searchForm" style="display: none;">
+                <form id="searchServiceForm" class="mb-3">
+                    <div class="form-group">
+                        <label for="searchQuery">Search Query</label>
+                        <input type="text" class="form-control" id="searchQuery" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+            </div>
+            <div id="servicesList"></div>
+        </div>
+    </div>
+
+    <!-- Business Locations Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Business Locations</h2>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <button class="btn btn-primary" onclick="listLocations()">List Locations</button>
+            </div>
+            <div id="locationsList"></div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Categories
+    function listCategories() {
+        fetch('/api/services/categories/')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('categoriesList');
+                list.innerHTML = '<div class="table-responsive"><table class="table"><thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Actions</th></tr></thead><tbody></tbody></table></div>';
+                const tbody = list.querySelector('tbody');
+                data.forEach(category => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${category.id}</td>
+                            <td>${category.name}</td>
+                            <td>${category.description || ''}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="viewCategory(${category.id})">View</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteCategory(${category.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+    }
+
+    function showCategoryForm() {
+        document.getElementById('categoryForm').style.display = 'block';
+    }
+
+    document.getElementById('addCategoryForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            name: document.getElementById('categoryName').value,
+            description: document.getElementById('categoryDescription').value
+        };
+
+        fetch('/api/services/categories/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Category added successfully!');
+            listCategories();
+            document.getElementById('categoryForm').style.display = 'none';
+            document.getElementById('addCategoryForm').reset();
+        })
+        .catch(error => alert('Error adding category: ' + error));
+    });
+
+    // Services
+    function listServices() {
+        fetch('/api/services/services/')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('servicesList');
+                list.innerHTML = '<div class="table-responsive"><table class="table"><thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Price</th><th>Category</th><th>Actions</th></tr></thead><tbody></tbody></table></div>';
+                const tbody = list.querySelector('tbody');
+                data.forEach(service => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${service.id}</td>
+                            <td>${service.name}</td>
+                            <td>${service.description || ''}</td>
+                            <td>${service.price}</td>
+                            <td>${service.category_name || ''}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="viewService(${service.id})">View</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteService(${service.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+    }
+
+    function showServiceForm() {
+        document.getElementById('serviceForm').style.display = 'block';
+        // Load categories for dropdown
+        fetch('/api/services/categories/')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('serviceCategory');
+                select.innerHTML = '<option value="">Select Category</option>';
+                data.forEach(category => {
+                    select.innerHTML += `<option value="${category.id}">${category.name}</option>`;
+                });
+            });
+    }
+
+    function showSearchForm() {
+        document.getElementById('searchForm').style.display = 'block';
+    }
+
+    document.getElementById('addServiceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            name: document.getElementById('serviceName').value,
+            description: document.getElementById('serviceDescription').value,
+            price: document.getElementById('servicePrice').value,
+            category: document.getElementById('serviceCategory').value
+        };
+
+        fetch('/api/services/services/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Service added successfully!');
+            listServices();
+            document.getElementById('serviceForm').style.display = 'none';
+            document.getElementById('addServiceForm').reset();
+        })
+        .catch(error => alert('Error adding service: ' + error));
+    });
+
+    document.getElementById('searchServiceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const query = document.getElementById('searchQuery').value;
+        fetch(`/api/services/search/?q=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('servicesList');
+                list.innerHTML = '<div class="table-responsive"><table class="table"><thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Price</th><th>Category</th></tr></thead><tbody></tbody></table></div>';
+                const tbody = list.querySelector('tbody');
+                data.forEach(service => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${service.id}</td>
+                            <td>${service.name}</td>
+                            <td>${service.description || ''}</td>
+                            <td>${service.price}</td>
+                            <td>${service.category_name || ''}</td>
+                        </tr>
+                    `;
+                });
+            });
+    });
+
+    // Business Locations
+    function listLocations() {
+        fetch('/api/services/locations/')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('locationsList');
+                list.innerHTML = '<div class="table-responsive"><table class="table"><thead><tr><th>ID</th><th>Business</th><th>Address</th><th>City</th><th>Actions</th></tr></thead><tbody></tbody></table></div>';
+                const tbody = list.querySelector('tbody');
+                data.forEach(location => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${location.id}</td>
+                            <td>${location.business_name || ''}</td>
+                            <td>${location.address || ''}</td>
+                            <td>${location.city || ''}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="viewLocation(${location.id})">View</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+    }
+</script>
+{% endblock %}
+{% endblock %} 

@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}Reviews - {{ service.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Reviews for {{ service.name }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-center">
+                            <h1 class="display-4">{{ service.avg_rating }}</h1>
+                            <div class="rating-stars">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= service.avg_rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <p class="text-muted">{{ service.total_reviews }} reviews</p>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="rating-bars">
+                                {% for i in "54321"|make_list %}
+                                    <div class="rating-bar mb-2">
+                                        <span class="rating-label">{{ i }} star</span>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-warning" 
+                                                 style="width: {{ service.rating_distribution|get_item:i }}%">
+                                                {{ service.rating_distribution|get_item:i }}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if user.is_authenticated and not user_review %}
+                        <div class="review-form mb-4">
+                            <h4>Write a Review</h4>
+                            <form method="post" action="{% url 'create_review' service.id %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">Rating</label>
+                                    <div class="rating-input">
+                                        {% for i in "12345"|make_list %}
+                                            <i class="far fa-star star-rating" 
+                                               data-rating="{{ i }}"></i>
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" name="rating" id="rating-value">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="comment" class="form-label">Review</label>
+                                    <textarea class="form-control" id="comment" name="comment" 
+                                              rows="3" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Submit Review</button>
+                            </form>
+                        </div>
+                    {% endif %}
+
+                    <div class="reviews-list">
+                        {% for review in reviews %}
+                            <div class="review-item mb-4">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5>{{ review.user.get_full_name }}</h5>
+                                        <div class="rating-stars">
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="fas fa-star text-warning"></i>
+                                                {% else %}
+                                                    <i class="far fa-star text-warning"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ review.created_at|date:"F j, Y" }}
+                                    </small>
+                                </div>
+                                <p class="mt-2">{{ review.comment }}</p>
+                                
+                                {% if user.is_staff or user == review.user %}
+                                    <div class="review-actions">
+                                        {% if user.is_staff %}
+                                            <button class="btn btn-sm btn-danger" 
+                                                    onclick="deleteReview({{ review.id }})">
+                                                Delete
+                                            </button>
+                                        {% endif %}
+                                        {% if user == review.user %}
+                                            <button class="btn btn-sm btn-primary" 
+                                                    onclick="editReview({{ review.id }})">
+                                                Edit
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Review Guidelines</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Be specific and detailed</li>
+                        <li><i class="fas fa-check text-success"></i> Share your experience</li>
+                        <li><i class="fas fa-check text-success"></i> Be honest and fair</li>
+                        <li><i class="fas fa-check text-success"></i> Avoid offensive language</li>
+                        <li><i class="fas fa-check text-success"></i> No personal information</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Star rating functionality
+    document.querySelectorAll('.star-rating').forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = this.dataset.rating;
+            document.getElementById('rating-value').value = rating;
+            
+            // Update star display
+            document.querySelectorAll('.star-rating').forEach(s => {
+                if (s.dataset.rating <= rating) {
+                    s.classList.remove('far');
+                    s.classList.add('fas');
+                } else {
+                    s.classList.remove('fas');
+                    s.classList.add('far');
+                }
+            });
+        });
+    });
+
+    // Review moderation functions
+    function deleteReview(reviewId) {
+        if (confirm('Are you sure you want to delete this review?')) {
+            fetch(`/api/reviews/${reviewId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            });
+        }
+    }
+
+    function editReview(reviewId) {
+        // Implement edit functionality
+    }
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %} 

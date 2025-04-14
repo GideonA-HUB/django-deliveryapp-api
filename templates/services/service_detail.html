@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ service.name }} - MyRider{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Service Details -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                {% if service.image %}
+                <img src="{{ service.image.url }}" class="card-img-top" alt="{{ service.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h1 class="card-title">{{ service.name }}</h1>
+                    <div class="mb-3">
+                        <span class="badge bg-primary">{{ service.category.name }}</span>
+                        {% if service.rating %}
+                        <span class="badge bg-warning">{{ service.rating }}★</span>
+                        {% endif %}
+                    </div>
+                    <p class="card-text">{{ service.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">${{ service.price }}</h3>
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-success add-to-cart" data-service-id="{{ service.id }}">Add to Cart</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Options -->
+            {% if service.options.all %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Service Options</h2>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for option in service.options.all %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">{{ option.name }}</h5>
+                                    <p class="mb-1">{{ option.description }}</p>
+                                </div>
+                                <span class="badge bg-primary">${{ option.price }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Business Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Business Information</h2>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ service.business.name }}</h5>
+                    <p class="card-text">{{ service.business.description }}</p>
+                    <div class="mb-3">
+                        <strong>Address:</strong> {{ service.business.address }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Phone:</strong> {{ service.business.phone }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Email:</strong> {{ service.business.email }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Quick Actions</h2>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'services:services-web' %}" class="btn btn-primary">Back to Services</a>
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-success add-to-cart" data-service-id="{{ service.id }}">Add to Cart</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Hours -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Business Hours</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        {% for schedule in service.business.schedules.all %}
+                        <li class="mb-2">
+                            <strong>{{ schedule.get_day_display }}:</strong>
+                            {{ schedule.open_time|time:"g:i A" }} - {{ schedule.close_time|time:"g:i A" }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Location</h2>
+                </div>
+                <div class="card-body">
+                    <div id="map" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle add to cart buttons
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', function() {
+                const serviceId = this.dataset.serviceId;
+                fetch('/api/orders/cart/items/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        service: serviceId,
+                        quantity: 1
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Service added to cart successfully!');
+                })
+                .catch(error => {
+                    alert('Error adding service to cart: ' + error);
+                });
+            });
+        });
+
+        // Initialize map
+        function initMap() {
+            const location = {
+                lat: {{ service.business.latitude }},
+                lng: {{ service.business.longitude }}
+            };
+            const map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 15,
+                center: location
+            });
+            new google.maps.Marker({
+                position: location,
+                map: map,
+                title: '{{ service.business.name }}'
+            });
+        }
+
+        // Load Google Maps API
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %} 

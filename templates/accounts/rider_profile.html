@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+
+{% block title %}Rider Profile - Delivery Service{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Rider Info Sidebar -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <img src="{{ rider.profile_picture.url }}" alt="Rider Profile" class="profile-image mb-3">
+                    <h4>{{ rider.get_full_name }}</h4>
+                    <p class="text-muted">{{ rider.vehicle_type }}</p>
+                    <p class="text-muted">{{ rider.license_number }}</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editRiderModal">
+                            Edit Profile
+                        </button>
+                        <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            Change Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rider Stats -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Performance Stats</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Total Deliveries</span>
+                                <span class="fw-bold">{{ total_deliveries }}</span>
+                            </div>
+                        </li>
+                        <li class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Average Rating</span>
+                                <span class="fw-bold">{{ average_rating }} <i class="fas fa-star text-warning"></i></span>
+                            </div>
+                        </li>
+                        <li class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>On-Time Rate</span>
+                                <span class="fw-bold">{{ on_time_rate }}%</span>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="d-flex justify-content-between">
+                                <span>Total Earnings</span>
+                                <span class="fw-bold">${{ total_earnings }}</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Current Status -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Current Status</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="status-indicator {% if rider.is_available %}bg-success{% else %}bg-danger{% endif %}"></div>
+                        <span class="ms-2">{{ rider.is_available|yesno:"Available,Unavailable" }}</span>
+                    </div>
+                    <form method="post" action="{% url 'update-status' %}">
+                        {% csrf_token %}
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="availability" name="is_available" {% if rider.is_available %}checked{% endif %}>
+                            <label class="form-check-label" for="availability">Available for Deliveries</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Update Status</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <!-- Current Assignment -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4 class="card-title">Current Assignment</h4>
+                    {% if current_assignment %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Pickup Details</h6>
+                            <p class="mb-1"><strong>Business:</strong> {{ current_assignment.order.business.name }}</p>
+                            <p class="mb-1"><strong>Address:</strong> {{ current_assignment.order.business.address }}</p>
+                            <p class="mb-1"><strong>Time:</strong> {{ current_assignment.pickup_time|date:"g:i A" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Delivery Details</h6>
+                            <p class="mb-1"><strong>Customer:</strong> {{ current_assignment.order.customer.get_full_name }}</p>
+                            <p class="mb-1"><strong>Address:</strong> {{ current_assignment.order.delivery_address }}</p>
+                            <p class="mb-1"><strong>Time:</strong> {{ current_assignment.delivery_time|date:"g:i A" }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
+                            Update Status
+                        </button>
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#updateLocationModal">
+                            Update Location
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                        <h5>No Current Assignment</h5>
+                        <p class="text-muted">You will be notified when a new delivery is assigned</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Deliveries -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="card-title mb-0">Recent Deliveries</h4>
+                        <a href="{% url 'rider-deliveries' %}" class="btn btn-outline-primary">View All</a>
+                    </div>
+                    
+                    {% for delivery in recent_deliveries %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title">Delivery #{{ delivery.id }}</h5>
+                                    <p class="text-muted mb-2">{{ delivery.created_at|date }}</p>
+                                    <span class="badge status-{{ delivery.status }}">{{ delivery.get_status_display }}</span>
+                                </div>
+                                <div class="text-end">
+                                    <h5 class="text-primary">${{ delivery.earnings }}</h5>
+                                    <a href="{% url 'delivery-detail' delivery.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                        <h5>No recent deliveries</h5>
+                        <p class="text-muted">Your delivery history will appear here</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Performance Chart -->
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Performance Overview</h4>
+                    <canvas id="performanceChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Rider Modal -->
+<div class="modal fade" id="editRiderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Rider Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" enctype="multipart/form-data" action="{% url 'update-rider' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="profile_picture" class="form-label">Profile Picture</label>
+                        <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label for="vehicle_type" class="form-label">Vehicle Type</label>
+                        <select class="form-select" id="vehicle_type" name="vehicle_type" required>
+                            {% for type in vehicle_types %}
+                            <option value="{{ type.0 }}" {% if type.0 == rider.vehicle_type %}selected{% endif %}>{{ type.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="license_number" class="form-label">License Number</label>
+                        <input type="text" class="form-control" id="license_number" name="license_number" value="{{ rider.license_number }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" value="{{ rider.phone }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Delivery Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'update-delivery-status' current_assignment.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status" required>
+                            {% for status in delivery_statuses %}
+                            <option value="{{ status.0 }}" {% if status.0 == current_assignment.status %}selected{% endif %}>{{ status.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Update Status</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Location Modal -->
+<div class="modal fade" id="updateLocationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Location</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'update-location' current_assignment.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="latitude" class="form-label">Latitude</label>
+                        <input type="text" class="form-control" id="latitude" name="latitude" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="longitude" class="form-label">Longitude</label>
+                        <input type="text" class="form-control" id="longitude" name="longitude" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Update Location</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'change-password' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize performance chart
+        const ctx = document.getElementById('performanceChart');
+        if (ctx) {
+            const chart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: {{ performance_labels|safe }},
+                    datasets: [{
+                        label: 'Daily Deliveries',
+                        data: {{ performance_data|safe }},
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Get current location for location updates
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const latitudeInput = document.getElementById('latitude');
+                    const longitudeInput = document.getElementById('longitude');
+                    if (latitudeInput && longitudeInput) {
+                        latitudeInput.value = position.coords.latitude;
+                        longitudeInput.value = position.coords.longitude;
+                    }
+                });
+            }
+        }
+
+        // Get location when modal opens
+        const locationModal = document.getElementById('updateLocationModal');
+        if (locationModal) {
+            locationModal.addEventListener('show.bs.modal', function() {
+                getCurrentLocation();
+            });
+        }
+    });
+</script>
+{% endblock %} 

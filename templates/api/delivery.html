@@ -1,0 +1,444 @@
+{% extends 'base.html' %}
+
+{% block title %}Delivery API Testing - MyRider{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Delivery API Testing</h1>
+    
+    <!-- Delivery Assignments Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Delivery Assignments</h2>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <button class="btn btn-primary" onclick="listAssignments()">List Assignments</button>
+                <button class="btn btn-success" onclick="showCreateAssignmentForm()">Create Assignment</button>
+            </div>
+            <div id="createAssignmentForm" style="display: none;">
+                <form id="newAssignmentForm" class="mb-3">
+                    <div class="form-group">
+                        <label for="orderId">Order ID</label>
+                        <input type="number" class="form-control" id="orderId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="riderId">Rider ID</label>
+                        <input type="number" class="form-control" id="riderId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea class="form-control" id="notes"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Assignment</button>
+                </form>
+            </div>
+            <div id="assignmentsList"></div>
+        </div>
+    </div>
+
+    <!-- Delivery Status Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Delivery Status</h2>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <form id="updateStatusForm" class="mb-3">
+                    <div class="form-group">
+                        <label for="assignmentId">Assignment ID</label>
+                        <input type="number" class="form-control" id="assignmentId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select class="form-control" id="status" required>
+                            <option value="assigned">Assigned</option>
+                            <option value="picked_up">Picked Up</option>
+                            <option value="in_transit">In Transit</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Location Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Delivery Location</h2>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <form id="updateLocationForm" class="mb-3">
+                    <div class="form-group">
+                        <label for="locationAssignmentId">Assignment ID</label>
+                        <input type="number" class="form-control" id="locationAssignmentId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="latitude">Latitude</label>
+                        <input type="number" class="form-control" id="latitude" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="longitude">Longitude</label>
+                        <input type="number" class="form-control" id="longitude" step="any" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Location</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Rating Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Delivery Rating</h2>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <form id="ratingForm" class="mb-3">
+                    <div class="form-group">
+                        <label for="ratingAssignmentId">Assignment ID</label>
+                        <input type="number" class="form-control" id="ratingAssignmentId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="rating">Rating (1-5)</label>
+                        <input type="number" class="form-control" id="rating" min="1" max="5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="comment">Comment</label>
+                        <textarea class="form-control" id="comment"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Rating</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Zones Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Delivery Zones</h2>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <button class="btn btn-primary" onclick="listZones()">List Zones</button>
+                <button class="btn btn-success" onclick="showCreateZoneForm()">Create Zone</button>
+            </div>
+            <div id="createZoneForm" style="display: none;">
+                <form id="newZoneForm" class="mb-3">
+                    <div class="form-group">
+                        <label for="zoneName">Name</label>
+                        <input type="text" class="form-control" id="zoneName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="zoneDescription">Description</label>
+                        <textarea class="form-control" id="zoneDescription"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="zoneCity">City</label>
+                        <input type="text" class="form-control" id="zoneCity" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="zoneArea">Area</label>
+                        <input type="text" class="form-control" id="zoneArea">
+                    </div>
+                    <div class="form-group">
+                        <label for="zonePostalCode">Postal Code</label>
+                        <input type="text" class="form-control" id="zonePostalCode">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Zone</button>
+                </form>
+            </div>
+            <div id="zonesList"></div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Assignment Functions
+    function listAssignments() {
+        fetch('/api/delivery/assignments/')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('assignmentsList');
+                list.innerHTML = `
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Order</th>
+                                    <th>Rider</th>
+                                    <th>Status</th>
+                                    <th>Assigned At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.map(assignment => `
+                                    <tr>
+                                        <td>${assignment.id}</td>
+                                        <td>${assignment.order}</td>
+                                        <td>${assignment.rider}</td>
+                                        <td><span class="badge badge-${getStatusBadgeClass(assignment.status)}">${assignment.status}</span></td>
+                                        <td>${new Date(assignment.assigned_at).toLocaleString()}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info" onclick="viewAssignment(${assignment.id})">View</button>
+                                            <button class="btn btn-sm btn-warning" onclick="showUpdateStatusForm(${assignment.id})">Update Status</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+    }
+
+    function showCreateAssignmentForm() {
+        document.getElementById('createAssignmentForm').style.display = 'block';
+    }
+
+    document.getElementById('newAssignmentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            order: document.getElementById('orderId').value,
+            rider: document.getElementById('riderId').value,
+            notes: document.getElementById('notes').value
+        };
+
+        fetch('/api/delivery/assignments/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Assignment created successfully!');
+            listAssignments();
+            document.getElementById('createAssignmentForm').style.display = 'none';
+            document.getElementById('newAssignmentForm').reset();
+        })
+        .catch(error => alert('Error creating assignment: ' + error));
+    });
+
+    // Status Functions
+    document.getElementById('updateStatusForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const assignmentId = document.getElementById('assignmentId').value;
+        const data = {
+            status: document.getElementById('status').value
+        };
+
+        fetch(`/api/delivery/assignments/${assignmentId}/status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Status updated successfully!');
+            listAssignments();
+            document.getElementById('updateStatusForm').reset();
+        })
+        .catch(error => alert('Error updating status: ' + error));
+    });
+
+    // Location Functions
+    document.getElementById('updateLocationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const assignmentId = document.getElementById('locationAssignmentId').value;
+        const data = {
+            latitude: document.getElementById('latitude').value,
+            longitude: document.getElementById('longitude').value
+        };
+
+        fetch(`/api/delivery/assignments/${assignmentId}/location/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Location updated successfully!');
+            document.getElementById('updateLocationForm').reset();
+        })
+        .catch(error => alert('Error updating location: ' + error));
+    });
+
+    // Rating Functions
+    document.getElementById('ratingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const assignmentId = document.getElementById('ratingAssignmentId').value;
+        const data = {
+            rating: document.getElementById('rating').value,
+            comment: document.getElementById('comment').value
+        };
+
+        fetch(`/api/delivery/assignments/${assignmentId}/rating/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Rating submitted successfully!');
+            document.getElementById('ratingForm').reset();
+        })
+        .catch(error => alert('Error submitting rating: ' + error));
+    });
+
+    // Zone Functions
+    function listZones() {
+        fetch('/api/delivery/zones/')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('zonesList');
+                list.innerHTML = `
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>City</th>
+                                    <th>Area</th>
+                                    <th>Postal Code</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.map(zone => `
+                                    <tr>
+                                        <td>${zone.id}</td>
+                                        <td>${zone.name}</td>
+                                        <td>${zone.city}</td>
+                                        <td>${zone.area || ''}</td>
+                                        <td>${zone.postal_code || ''}</td>
+                                        <td><span class="badge badge-${zone.is_active ? 'success' : 'danger'}">${zone.is_active ? 'Active' : 'Inactive'}</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info" onclick="viewZone(${zone.id})">View</button>
+                                            <button class="btn btn-sm btn-warning" onclick="toggleZoneStatus(${zone.id})">Toggle Status</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+    }
+
+    function showCreateZoneForm() {
+        document.getElementById('createZoneForm').style.display = 'block';
+    }
+
+    document.getElementById('newZoneForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            name: document.getElementById('zoneName').value,
+            description: document.getElementById('zoneDescription').value,
+            city: document.getElementById('zoneCity').value,
+            area: document.getElementById('zoneArea').value,
+            postal_code: document.getElementById('zonePostalCode').value
+        };
+
+        fetch('/api/delivery/zones/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Zone created successfully!');
+            listZones();
+            document.getElementById('createZoneForm').style.display = 'none';
+            document.getElementById('newZoneForm').reset();
+        })
+        .catch(error => alert('Error creating zone: ' + error));
+    });
+
+    // Helper Functions
+    function getStatusBadgeClass(status) {
+        const statusClasses = {
+            'assigned': 'info',
+            'picked_up': 'primary',
+            'in_transit': 'warning',
+            'delivered': 'success',
+            'cancelled': 'danger'
+        };
+        return statusClasses[status] || 'secondary';
+    }
+
+    function viewAssignment(assignmentId) {
+        fetch(`/api/delivery/assignments/${assignmentId}/`)
+            .then(response => response.json())
+            .then(data => {
+                alert(JSON.stringify(data, null, 2));
+            });
+    }
+
+    function showUpdateStatusForm(assignmentId) {
+        document.getElementById('assignmentId').value = assignmentId;
+    }
+
+    function viewZone(zoneId) {
+        fetch(`/api/delivery/zones/${zoneId}/`)
+            .then(response => response.json())
+            .then(data => {
+                alert(JSON.stringify(data, null, 2));
+            });
+    }
+
+    function toggleZoneStatus(zoneId) {
+        fetch(`/api/delivery/zones/${zoneId}/toggle-status/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Zone status updated successfully!');
+            listZones();
+        })
+        .catch(error => alert('Error updating zone status: ' + error));
+    }
+</script>
+{% endblock %} 

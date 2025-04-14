@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}API Documentation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">API Endpoints</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'schema-swagger-ui' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-book"></i> Swagger Documentation
+                    </a>
+                    <a href="{% url 'schema-redoc' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-alt"></i> ReDoc Documentation
+                    </a>
+                    <a href="{% url 'service-list' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-utensils"></i> Services API
+                    </a>
+                    <a href="{% url 'order-list' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shopping-cart"></i> Orders API
+                    </a>
+                    <a href="{% url 'delivery-assignment-list' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-truck"></i> Delivery API
+                    </a>
+                    <a href="{% url 'customer-dashboard' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user"></i> Customer Dashboard
+                    </a>
+                    <a href="{% url 'business-dashboard' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-store"></i> Business Dashboard
+                    </a>
+                    <a href="{% url 'rider-dashboard' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-motorcycle"></i> Rider Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">{% block api_title %}{% endblock %}</h4>
+                </div>
+                <div class="card-body">
+                    {% block api_content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

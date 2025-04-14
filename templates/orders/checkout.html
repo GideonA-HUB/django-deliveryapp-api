@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - Delivery Service{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Order Summary -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Order Summary</h2>
+                    
+                    {% for item in cart.items.all %}
+                    <div class="card mb-3">
+                        <div class="row g-0">
+                            <div class="col-md-3">
+                                <img src="{{ item.service.image.url }}" class="img-fluid rounded-start" alt="{{ item.service.name }}">
+                            </div>
+                            <div class="col-md-9">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ item.service.name }}</h5>
+                                    <p class="card-text text-muted">{{ item.service.description|truncatewords:20 }}</p>
+                                    
+                                    {% if item.selected_options.exists %}
+                                    <div class="mb-2">
+                                        <small class="text-muted">Selected Options:</small>
+                                        <ul class="list-unstyled ms-3 mb-0">
+                                            {% for option in item.selected_options.all %}
+                                            <li>{{ option.name }} (+${{ option.price }})</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if item.special_instructions %}
+                                    <div class="mb-2">
+                                        <small class="text-muted">Special Instructions:</small>
+                                        <p class="mb-0">{{ item.special_instructions }}</p>
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">Quantity: {{ item.quantity }}</span>
+                                        <span class="text-primary fw-bold">${{ item.total_price }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <h5>Subtotal</h5>
+                        <span>${{ cart.subtotal }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5>Delivery Fee</h5>
+                        <span>${{ delivery_fee }}</span>
+                    </div>
+                    {% if cart.discount %}
+                    <div class="d-flex justify-content-between align-items-center text-success">
+                        <h5>Discount</h5>
+                        <span>-${{ cart.discount }}</span>
+                    </div>
+                    {% endif %}
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4>Total</h4>
+                        <h4 class="text-primary">${{ cart.total }}</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Information -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Delivery Information</h2>
+                    <form method="post" id="deliveryForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="delivery_address" class="form-label">Delivery Address</label>
+                            <textarea class="form-control" id="delivery_address" name="delivery_address" rows="3" required>{{ delivery_address }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="delivery_instructions" class="form-label">Delivery Instructions (Optional)</label>
+                            <textarea class="form-control" id="delivery_instructions" name="delivery_instructions" rows="2">{{ delivery_instructions }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="delivery_time" class="form-label">Preferred Delivery Time</label>
+                            <select class="form-select" id="delivery_time" name="delivery_time" required>
+                                <option value="">Select Delivery Time</option>
+                                <option value="asap">As Soon as Possible</option>
+                                <option value="morning">Morning (8:00 AM - 12:00 PM)</option>
+                                <option value="afternoon">Afternoon (12:00 PM - 5:00 PM)</option>
+                                <option value="evening">Evening (5:00 PM - 9:00 PM)</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Information -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Payment Information</h2>
+                    
+                    <form method="post" id="paymentForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="payment_method" class="form-label">Payment Method</label>
+                            <select class="form-select" id="payment_method" name="payment_method" required>
+                                <option value="">Select Payment Method</option>
+                                <option value="credit_card">Credit Card</option>
+                                <option value="debit_card">Debit Card</option>
+                                <option value="paypal">PayPal</option>
+                                <option value="cash">Cash on Delivery</option>
+                            </select>
+                        </div>
+
+                        <div id="cardDetails" style="display: none;">
+                            <div class="mb-3">
+                                <label for="card_number" class="form-label">Card Number</label>
+                                <input type="text" class="form-control" id="card_number" name="card_number" placeholder="1234 5678 9012 3456">
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="expiry_date" class="form-label">Expiry Date</label>
+                                    <input type="text" class="form-control" id="expiry_date" name="expiry_date" placeholder="MM/YY">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="cvv" class="form-label">CVV</label>
+                                    <input type="text" class="form-control" id="cvv" name="cvv" placeholder="123">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="card_holder" class="form-label">Card Holder Name</label>
+                                <input type="text" class="form-control" id="card_holder" name="card_holder" placeholder="John Doe">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="save_card" name="save_card">
+                            <label class="form-check-label" for="save_card">Save card for future payments</label>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Place Order</button>
+                            <a href="{% url 'cart' %}" class="btn btn-outline-secondary">Back to Cart</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Order Protection -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Order Protection</h5>
+                    <p class="card-text">Your order is protected by our secure payment system and delivery guarantee.</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-shield-alt text-success me-2"></i> Secure Payment</li>
+                        <li><i class="fas fa-truck text-success me-2"></i> On-time Delivery</li>
+                        <li><i class="fas fa-undo text-success me-2"></i> Easy Returns</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show/hide card details based on payment method
+    document.getElementById('payment_method').addEventListener('change', function() {
+        const cardDetails = document.getElementById('cardDetails');
+        if (this.value === 'credit_card' || this.value === 'debit_card') {
+            cardDetails.style.display = 'block';
+        } else {
+            cardDetails.style.display = 'none';
+        }
+    });
+
+    // Form validation
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        const paymentMethod = document.getElementById('payment_method').value;
+        if (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') {
+            const cardNumber = document.getElementById('card_number').value;
+            const expiryDate = document.getElementById('expiry_date').value;
+            const cvv = document.getElementById('cvv').value;
+            const cardHolder = document.getElementById('card_holder').value;
+
+            if (!cardNumber || !expiryDate || !cvv || !cardHolder) {
+                e.preventDefault();
+                alert('Please fill in all card details');
+            }
+        }
+    });
+</script>
+{% endblock %} 

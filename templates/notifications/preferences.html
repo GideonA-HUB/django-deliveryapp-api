@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}Notification Preferences - MyRider{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Notification Preferences</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="notification-preferences">
+                        {% csrf_token %}
+                        
+                        <!-- Email Notifications -->
+                        <div class="mb-4">
+                            <h5>Email Notifications</h5>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="email_order_updates" 
+                                       id="email_order_updates" {% if preferences.email_order_updates %}checked{% endif %}>
+                                <label class="form-check-label" for="email_order_updates">
+                                    Order Updates
+                                </label>
+                                <div class="form-text">
+                                    Receive email notifications about your order status changes
+                                </div>
+                            </div>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="email_promotions" 
+                                       id="email_promotions" {% if preferences.email_promotions %}checked{% endif %}>
+                                <label class="form-check-label" for="email_promotions">
+                                    Promotions and Offers
+                                </label>
+                                <div class="form-text">
+                                    Receive email notifications about special offers and promotions
+                                </div>
+                            </div>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="email_newsletter" 
+                                       id="email_newsletter" {% if preferences.email_newsletter %}checked{% endif %}>
+                                <label class="form-check-label" for="email_newsletter">
+                                    Newsletter
+                                </label>
+                                <div class="form-text">
+                                    Receive our monthly newsletter with updates and tips
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Push Notifications -->
+                        <div class="mb-4">
+                            <h5>Push Notifications</h5>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="push_order_updates" 
+                                       id="push_order_updates" {% if preferences.push_order_updates %}checked{% endif %}>
+                                <label class="form-check-label" for="push_order_updates">
+                                    Order Updates
+                                </label>
+                                <div class="form-text">
+                                    Receive push notifications about your order status changes
+                                </div>
+                            </div>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="push_delivery_updates" 
+                                       id="push_delivery_updates" {% if preferences.push_delivery_updates %}checked{% endif %}>
+                                <label class="form-check-label" for="push_delivery_updates">
+                                    Delivery Updates
+                                </label>
+                                <div class="form-text">
+                                    Receive push notifications about your delivery status
+                                </div>
+                            </div>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="push_chat_messages" 
+                                       id="push_chat_messages" {% if preferences.push_chat_messages %}checked{% endif %}>
+                                <label class="form-check-label" for="push_chat_messages">
+                                    Chat Messages
+                                </label>
+                                <div class="form-text">
+                                    Receive push notifications for new chat messages
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SMS Notifications -->
+                        <div class="mb-4">
+                            <h5>SMS Notifications</h5>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="sms_order_updates" 
+                                       id="sms_order_updates" {% if preferences.sms_order_updates %}checked{% endif %}>
+                                <label class="form-check-label" for="sms_order_updates">
+                                    Order Updates
+                                </label>
+                                <div class="form-text">
+                                    Receive SMS notifications about your order status changes
+                                </div>
+                            </div>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="sms_delivery_updates" 
+                                       id="sms_delivery_updates" {% if preferences.sms_delivery_updates %}checked{% endif %}>
+                                <label class="form-check-label" for="sms_delivery_updates">
+                                    Delivery Updates
+                                </label>
+                                <div class="form-text">
+                                    Receive SMS notifications about your delivery status
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notification Frequency -->
+                        <div class="mb-4">
+                            <h5>Notification Frequency</h5>
+                            <div class="mb-3">
+                                <label class="form-label">Email Frequency</label>
+                                <select class="form-select" name="email_frequency">
+                                    <option value="instant" {% if preferences.email_frequency == 'instant' %}selected{% endif %}>
+                                        Instant
+                                    </option>
+                                    <option value="daily" {% if preferences.email_frequency == 'daily' %}selected{% endif %}>
+                                        Daily Digest
+                                    </option>
+                                    <option value="weekly" {% if preferences.email_frequency == 'weekly' %}selected{% endif %}>
+                                        Weekly Digest
+                                    </option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Push Notification Time</label>
+                                <div class="input-group">
+                                    <input type="time" class="form-control" name="push_notification_start" 
+                                           value="{{ preferences.push_notification_start|time:'H:i' }}">
+                                    <span class="input-group-text">to</span>
+                                    <input type="time" class="form-control" name="push_notification_end" 
+                                           value="{{ preferences.push_notification_end|time:'H:i' }}">
+                                </div>
+                                <div class="form-text">
+                                    Only receive push notifications during these hours
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Save Preferences</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('#notification-preferences');
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Preferences saved successfully!');
+                } else {
+                    showAlert('danger', 'Error saving preferences. Please try again.');
+                }
+            })
+            .catch(error => {
+                showAlert('danger', 'Error saving preferences. Please try again.');
+            });
+        });
+    });
+
+    function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        const container = document.querySelector('.container');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+</script>
+{% endblock %} 

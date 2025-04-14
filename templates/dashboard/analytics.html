@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics Dashboard - MyRider{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Total Orders</h5>
+                    <h2 class="card-text" id="total-orders">0</h2>
+                    <p class="text-muted">Last 30 days</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Revenue</h5>
+                    <h2 class="card-text" id="total-revenue">$0</h2>
+                    <p class="text-muted">Last 30 days</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Active Users</h5>
+                    <h2 class="card-text" id="active-users">0</h2>
+                    <p class="text-muted">Currently online</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Average Rating</h5>
+                    <h2 class="card-text" id="avg-rating">0.0</h2>
+                    <p class="text-muted">Based on reviews</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Order Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="orderChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Order Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Top Services</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="servicesChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Customer Locations</h5>
+                </div>
+                <div class="card-body">
+                    <div id="map" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+<script>
+    // Initialize charts
+    document.addEventListener('DOMContentLoaded', function() {
+        // Order trends chart
+        const orderCtx = document.getElementById('orderChart').getContext('2d');
+        new Chart(orderCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Orders',
+                    data: [],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Status distribution chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Confirmed', 'In Progress', 'Delivered', 'Cancelled'],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        'rgb(255, 205, 86)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 159, 64)',
+                        'rgb(75, 192, 192)',
+                        'rgb(255, 99, 132)'
+                    ]
+                }]
+            }
+        });
+
+        // Top services chart
+        const servicesCtx = document.getElementById('servicesChart').getContext('2d');
+        new Chart(servicesCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Orders',
+                    data: [],
+                    backgroundColor: 'rgb(54, 162, 235)'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Initialize map
+        const map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 4,
+            center: {lat: 0, lng: 0}
+        });
+
+        // Fetch analytics data
+        fetchAnalyticsData();
+    });
+
+    function fetchAnalyticsData() {
+        fetch('/api/analytics/')
+            .then(response => response.json())
+            .then(data => {
+                // Update statistics
+                document.getElementById('total-orders').textContent = data.total_orders;
+                document.getElementById('total-revenue').textContent = `$${data.total_revenue}`;
+                document.getElementById('active-users').textContent = data.active_users;
+                document.getElementById('avg-rating').textContent = data.avg_rating;
+
+                // Update charts
+                updateCharts(data);
+                updateMap(data.customer_locations);
+            });
+    }
+
+    function updateCharts(data) {
+        // Update order trends chart
+        const orderChart = Chart.getChart('orderChart');
+        orderChart.data.labels = data.order_trends.labels;
+        orderChart.data.datasets[0].data = data.order_trends.data;
+        orderChart.update();
+
+        // Update status distribution chart
+        const statusChart = Chart.getChart('statusChart');
+        statusChart.data.datasets[0].data = data.status_distribution;
+        statusChart.update();
+
+        // Update top services chart
+        const servicesChart = Chart.getChart('servicesChart');
+        servicesChart.data.labels = data.top_services.labels;
+        servicesChart.data.datasets[0].data = data.top_services.data;
+        servicesChart.update();
+    }
+
+    function updateMap(locations) {
+        const map = new google.maps.Map(document.getElementById('map'));
+        locations.forEach(location => {
+            new google.maps.Marker({
+                position: {lat: location.lat, lng: location.lng},
+                map: map,
+                title: location.name
+            });
+        });
+    }
+</script>
+{% endblock %} 

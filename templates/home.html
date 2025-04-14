@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to Delivery Service{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h1 class="display-4 mb-4">Welcome to Delivery Service</h1>
+            <p class="lead mb-4">Your one-stop solution for all delivery needs</p>
+            
+            {% if user.is_authenticated %}
+                <div class="alert alert-info">
+                    You are logged in as {{ user.email }}
+                    <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm ms-3">Logout</a>
+                </div>
+            {% else %}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Customer</h5>
+                                <p class="card-text">Order services and track deliveries</p>
+                                <a href="{% url 'customer_register' %}" class="btn btn-primary">Register</a>
+                                <a href="{% url 'login' %}" class="btn btn-outline-primary">Login</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Business</h5>
+                                <p class="card-text">List and manage your services</p>
+                                <a href="{% url 'business_register' %}" class="btn btn-primary">Register</a>
+                                <a href="{% url 'login' %}" class="btn btn-outline-primary">Login</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Rider</h5>
+                                <p class="card-text">Deliver orders and earn money</p>
+                                <a href="{% url 'rider_register' %}" class="btn btn-primary">Register</a>
+                                <a href="{% url 'login' %}" class="btn btn-outline-primary">Login</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 
