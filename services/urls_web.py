@@ -11,4 +11,5 @@ urlpatterns = [
     path('ratings/', views.ServiceRatingViewSet.as_view({'get': 'list'}), name='rating_list'),
     path('availability/', views.ServiceAvailabilityViewSet.as_view({'get': 'list'}), name='availability_list'),
     path('web/', views.test_api_view, name='test_api'),
+    path('register/', views.customer_register, name='customer_register'),
 ]

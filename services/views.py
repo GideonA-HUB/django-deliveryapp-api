@@ -267,3 +267,7 @@ class ServiceAvailabilityViewSet(viewsets.ModelViewSet):
                 return Response({'is_available': True, 'slots': availability.available_slots})
             return Response({'is_available': False})
         return Response({'error': 'Service ID and date are required'}, status=400)
+
+def customer_register(request):
+    # Your registration logic here
+    return render(request, 'customer_register.html')

@@ -8,7 +8,7 @@ from .views import (
     CategoryViewSet, ServiceViewSet,
     ServiceOptionViewSet, TagViewSet,
     BusinessLocationViewSet, BusinessScheduleViewSet,
-    services_api_view
+    services_api_view, customer_register
 )
 from .views_web import ServiceListView as WebServiceListView, ServiceDetailView as WebServiceDetailView
 
@@ -39,4 +39,7 @@ urlpatterns = [
     path('search/', ServiceSearchView.as_view(), name='service-search'),
     path('locations/', BusinessLocationView.as_view(), name='business-location-list'),
     path('schedules/', BusinessScheduleView.as_view(), name='business-schedule-list'),
+    
+    # Web routes
+    path('register/', customer_register, name='customer_register'),
 ] 

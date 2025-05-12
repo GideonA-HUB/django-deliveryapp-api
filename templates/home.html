@@ -12,7 +12,7 @@
             {% if user.is_authenticated %}
                 <div class="alert alert-info">
                     You are logged in as {{ user.email }}
-                    <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm ms-3">Logout</a>
+                    <a href="{% url 'web-auth:logout' %}" class="btn btn-outline-danger btn-sm ms-3">Logout</a>
                 </div>
             {% else %}
                 <div class="row">
@@ -21,8 +21,8 @@
                             <div class="card-body">
                                 <h5 class="card-title">Customer</h5>
                                 <p class="card-text">Order services and track deliveries</p>
-                                <a href="{% url 'customer_register' %}" class="btn btn-primary">Register</a>
-                                <a href="{% url 'login' %}" class="btn btn-outline-primary">Login</a>
+                                <a href="{% url 'services:customer_register' %}" class="btn btn-primary">Register</a>
+                                <a href="{% url 'web-auth:login' %}" class="btn btn-outline-primary">Login</a>
                             </div>
                         </div>
                     </div>
@@ -31,8 +31,8 @@
                             <div class="card-body">
                                 <h5 class="card-title">Business</h5>
                                 <p class="card-text">List and manage your services</p>
-                                <a href="{% url 'business_register' %}" class="btn btn-primary">Register</a>
-                                <a href="{% url 'login' %}" class="btn btn-outline-primary">Login</a>
+                                <a href="{% url 'web-auth:register' %}" class="btn btn-primary">Register</a>
+                                <a href="{% url 'web-auth:login' %}" class="btn btn-outline-primary">Login</a>
                             </div>
                         </div>
                     </div>
@@ -41,8 +41,8 @@
                             <div class="card-body">
                                 <h5 class="card-title">Rider</h5>
                                 <p class="card-text">Deliver orders and earn money</p>
-                                <a href="{% url 'rider_register' %}" class="btn btn-primary">Register</a>
-                                <a href="{% url 'login' %}" class="btn btn-outline-primary">Login</a>
+                                <a href="{% url 'web-auth:register' %}" class="btn btn-primary">Register</a>
+                                <a href="{% url 'web-auth:login' %}" class="btn btn-outline-primary">Login</a>
                             </div>
                         </div>
                     </div>
