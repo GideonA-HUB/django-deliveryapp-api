@@ -1,172 +1,157 @@
 {% extends 'base.html' %}
 
-{% block title %}Register - MyRider{% endblock %}
+{% block title %}Register - Delivery Service{% endblock %}
+
+{% block extra_css %}
+<style>
+    .register-container {
+        max-width: 500px;
+        margin: 2rem auto;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+    }
+    .register-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .register-header i {
+        font-size: 3rem;
+        color: #28a745;
+        margin-bottom: 1rem;
+    }
+    .form-floating {
+        margin-bottom: 1rem;
+    }
+    .btn-register {
+        width: 100%;
+        padding: 0.8rem;
+        font-size: 1.1rem;
+    }
+    .register-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #dee2e6;
+    }
+    .user-type-selector {
+        margin-bottom: 1.5rem;
+    }
+    .user-type-selector .btn {
+        flex: 1;
+        margin: 0 0.5rem;
+    }
+    .user-type-selector .btn.active {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="text-center">Create an Account</h2>
-                </div>
-                <div class="card-body">
-                    <form method="post" class="needs-validation" novalidate>
-                        {% csrf_token %}
-                        
-                        {% if form.errors %}
-                            <div class="alert alert-danger">
-                                {% for field, errors in form.errors.items %}
-                                    {% for error in errors %}
-                                        <p>{{ error }}</p>
-                                    {% endfor %}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Account Type</label>
-                            <div class="d-flex justify-content-between">
-                                {% for choice in form.user_type.field.choices %}
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="user_type" 
-                                               id="user_type_{{ choice.0 }}" value="{{ choice.0 }}"
-                                               {% if form.user_type.value == choice.0 %}checked{% endif %}>
-                                        <label class="form-check-label" for="user_type_{{ choice.0 }}">
-                                            {{ choice.1 }}
-                                        </label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" 
-                                   value="{{ form.email.value|default:'' }}" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="password1" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password1" name="password1" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="password2" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="password2" name="password2" required>
-                        </div>
-                        
-                        <!-- Customer Fields -->
-                        <div id="customer_fields" class="user-type-fields">
-                            <h4 class="mb-3">Customer Information</h4>
-                            <div class="mb-3">
-                                <label for="first_name" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="first_name" name="first_name" 
-                                       value="{{ form.first_name.value|default:'' }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="last_name" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="last_name" name="last_name" 
-                                       value="{{ form.last_name.value|default:'' }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="phone" name="phone" 
-                                       value="{{ form.phone.value|default:'' }}">
-                            </div>
-                        </div>
-                        
-                        <!-- Business Fields -->
-                        <div id="business_fields" class="user-type-fields">
-                            <h4 class="mb-3">Business Information</h4>
-                            <div class="mb-3">
-                                <label for="business_name" class="form-label">Business Name</label>
-                                <input type="text" class="form-control" id="business_name" name="business_name" 
-                                       value="{{ form.business_name.value|default:'' }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="business_type" class="form-label">Business Type</label>
-                                <select class="form-select" id="business_type" name="business_type">
-                                    {% for choice in form.business_type.field.choices %}
-                                        <option value="{{ choice.0 }}" 
-                                                {% if form.business_type.value == choice.0 %}selected{% endif %}>
-                                            {{ choice.1 }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="business_phone" class="form-label">Business Phone</label>
-                                <input type="tel" class="form-control" id="business_phone" name="business_phone" 
-                                       value="{{ form.business_phone.value|default:'' }}">
-                            </div>
-                        </div>
-                        
-                        <!-- Rider Fields -->
-                        <div id="rider_fields" class="user-type-fields">
-                            <h4 class="mb-3">Rider Information</h4>
-                            <div class="mb-3">
-                                <label for="rider_first_name" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="rider_first_name" name="rider_first_name" 
-                                       value="{{ form.rider_first_name.value|default:'' }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="rider_last_name" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="rider_last_name" name="rider_last_name" 
-                                       value="{{ form.rider_last_name.value|default:'' }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="rider_phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="rider_phone" name="rider_phone" 
-                                       value="{{ form.rider_phone.value|default:'' }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="vehicle_type" class="form-label">Vehicle Type</label>
-                                <select class="form-select" id="vehicle_type" name="vehicle_type">
-                                    {% for choice in form.vehicle_type.field.choices %}
-                                        <option value="{{ choice.0 }}" 
-                                                {% if form.vehicle_type.value == choice.0 %}selected{% endif %}>
-                                            {{ choice.1 }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Register</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="card-footer text-center">
-                    <p class="mb-0">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
-                </div>
+<div class="register-container">
+    <div class="register-header">
+        <i class="fas fa-user-plus"></i>
+        <h2>Create Account</h2>
+        <p class="text-muted">Join our delivery service platform</p>
+    </div>
+
+    <form method="post" action="{% url 'web-auth:register' %}" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                Please correct the errors below.
             </div>
+        {% endif %}
+
+        <div class="user-type-selector d-flex justify-content-center">
+            <button type="button" class="btn btn-outline-primary active" data-type="customer">
+                <i class="fas fa-user me-2"></i>Customer
+            </button>
+            <button type="button" class="btn btn-outline-primary" data-type="business">
+                <i class="fas fa-store me-2"></i>Business
+            </button>
+            <button type="button" class="btn btn-outline-primary" data-type="rider">
+                <i class="fas fa-motorcycle me-2"></i>Rider
+            </button>
         </div>
+
+        <div class="form-floating">
+            <input type="text" class="form-control" id="id_full_name" name="full_name" placeholder="Full Name" required>
+            <label for="id_full_name">Full Name</label>
+        </div>
+
+        <div class="form-floating">
+            <input type="email" class="form-control" id="id_email" name="email" placeholder="Email" required>
+            <label for="id_email">Email address</label>
+        </div>
+
+        <div class="form-floating">
+            <input type="tel" class="form-control" id="id_phone" name="phone" placeholder="Phone Number" required>
+            <label for="id_phone">Phone Number</label>
+        </div>
+
+        <div class="form-floating">
+            <input type="password" class="form-control" id="id_password1" name="password1" placeholder="Password" required>
+            <label for="id_password1">Password</label>
+        </div>
+
+        <div class="form-floating">
+            <input type="password" class="form-control" id="id_password2" name="password2" placeholder="Confirm Password" required>
+            <label for="id_password2">Confirm Password</label>
+        </div>
+
+        <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+            <label class="form-check-label" for="terms">
+                I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-register">
+            <i class="fas fa-user-plus me-2"></i>Create Account
+        </button>
+    </form>
+
+    <div class="register-footer">
+        <p class="mb-3">Already have an account? <a href="{% url 'web-auth:login' %}" class="text-decoration-none">Login here</a></p>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const userTypeFields = document.querySelectorAll('.user-type-fields');
-    const userTypeInputs = document.querySelectorAll('input[name="user_type"]');
-    
-    function showFieldsForUserType(userType) {
-        userTypeFields.forEach(fields => fields.style.display = 'none');
-        document.getElementById(userType + '_fields').style.display = 'block';
-    }
-    
-    userTypeInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            showFieldsForUserType(this.value);
+    document.addEventListener('DOMContentLoaded', function() {
+        // User type selector
+        const userTypeButtons = document.querySelectorAll('.user-type-selector .btn');
+        const userTypeInput = document.createElement('input');
+        userTypeInput.type = 'hidden';
+        userTypeInput.name = 'user_type';
+        userTypeInput.value = 'customer';
+        document.querySelector('form').appendChild(userTypeInput);
+
+        userTypeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                userTypeButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                userTypeInput.value = this.dataset.type;
+            });
         });
-        
-        if (input.checked) {
-            showFieldsForUserType(input.value);
-        }
+
+        // Form validation
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
     });
-});
 </script>
 {% endblock %} 

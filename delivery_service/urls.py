@@ -58,7 +58,7 @@ urlpatterns = [
     path('api/chat/', include('chat.urls_api', namespace='api-chat')),
     
     # Template-based routes
-    path('', include('accounts.urls_web', namespace='web-auth')),
+    path('accounts/', include('accounts.urls_web', namespace='web-auth')),
     path('services/', include('services.urls_web', namespace='web-services')),
     path('orders/', include('orders.urls_web', namespace='web-orders')),
     path('delivery/', include('delivery.urls_web', namespace='web-delivery')),

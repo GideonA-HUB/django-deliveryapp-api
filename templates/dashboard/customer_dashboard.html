@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Dashboard - Delivery Service{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        padding: 2rem 0;
+    }
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+    .stat-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    .stat-label {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+    .recent-orders {
+        background: #fff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    .order-item {
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+        transition: background-color 0.3s ease;
+    }
+    .order-item:hover {
+        background-color: #f8f9fa;
+    }
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+    .quick-actions {
+        background: #fff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    .quick-action-btn {
+        width: 100%;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        text-align: left;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .quick-action-btn:hover {
+        transform: translateX(5px);
+    }
+    .quick-action-btn i {
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="mb-3">Welcome back, {{ user.get_full_name|default:user.username }}</h1>
+        <p class="text-muted">Here's what's happening with your orders today.</p>
+    </div>
+
+    <div class="row">
+        <!-- Statistics Cards -->
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon text-primary">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="stat-value">{{ total_orders }}</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon text-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-value">{{ active_orders }}</div>
+                <div class="stat-label">Active Orders</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon text-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value">{{ completed_orders }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon text-info">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-value">{{ loyalty_points }}</div>
+                <div class="stat-label">Loyalty Points</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Recent Orders -->
+        <div class="col-md-8">
+            <div class="recent-orders">
+                <h3 class="mb-4">Recent Orders</h3>
+                {% if recent_orders %}
+                    {% for order in recent_orders %}
+                        <div class="order-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">Order #{{ order.id }}</h5>
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-store me-2"></i>{{ order.business.name }}
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    <span class="status-badge bg-{{ order.status_color }}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                    <p class="mb-0 mt-2">
+                                        <i class="fas fa-clock me-1"></i>{{ order.created_at|timesince }} ago
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <div class="text-center mt-3">
+                        <a href="{% url 'web-orders:list' %}" class="btn btn-outline-primary">
+                            View All Orders
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No orders yet</p>
+                        <a href="{% url 'web-services:list' %}" class="btn btn-primary">
+                            Browse Services
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-md-4">
+            <div class="quick-actions">
+                <h3 class="mb-4">Quick Actions</h3>
+                <a href="{% url 'web-services:list' %}" class="btn btn-outline-primary quick-action-btn">
+                    <i class="fas fa-search"></i> Find Services
+                </a>
+                <a href="{% url 'web-orders:create' %}" class="btn btn-outline-success quick-action-btn">
+                    <i class="fas fa-plus"></i> New Order
+                </a>
+                <a href="{% url 'web-auth:profile' %}" class="btn btn-outline-info quick-action-btn">
+                    <i class="fas fa-user"></i> Update Profile
+                </a>
+                <a href="{% url 'web-orders:tracking' %}" class="btn btn-outline-warning quick-action-btn">
+                    <i class="fas fa-map-marker-alt"></i> Track Orders
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add any custom JavaScript here
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize any dashboard-specific functionality
+    });
+</script>
+{% endblock %} 

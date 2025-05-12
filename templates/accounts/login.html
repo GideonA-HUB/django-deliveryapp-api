@@ -1,68 +1,299 @@
 {% extends 'base.html' %}
 
-{% block title %}Login - MyRider{% endblock %}
+{% block title %}Login - Delivery Service{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-wrapper {
+        min-height: 100vh;
+        display: flex;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    .login-container {
+        display: flex;
+        width: 100%;
+        max-width: 1000px;
+        margin: 2rem auto;
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .login-image {
+        flex: 1;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    .login-image::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('https://images.unsplash.com/photo-1578575437130-527eed3abbec?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;
+        opacity: 0.2;
+    }
+    .login-image h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+    .login-image p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+    .login-form {
+        flex: 1;
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .login-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    .login-header i {
+        font-size: 3rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+        animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    .form-floating {
+        margin-bottom: 1.5rem;
+    }
+    .form-floating input {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        padding: 1rem;
+        transition: all 0.3s ease;
+    }
+    .form-floating input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .btn-login {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    .login-footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e2e8f0;
+    }
+    .social-login {
+        margin-top: 2rem;
+    }
+    .social-login .btn {
+        width: 100%;
+        margin-bottom: 1rem;
+        padding: 0.8rem;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .social-login .btn:hover {
+        transform: translateY(-2px);
+    }
+    .alert {
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border: none;
+        animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+        from { transform: translateY(-10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .alert i {
+        margin-right: 0.5rem;
+    }
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+    .form-check-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .forgot-password {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+    .forgot-password:hover {
+        color: #764ba2;
+    }
+    .register-link {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+    .register-link:hover {
+        color: #764ba2;
+    }
+    @media (max-width: 768px) {
+        .login-container {
+            flex-direction: column;
+            margin: 0;
+            border-radius: 0;
+        }
+        .login-image {
+            padding: 2rem;
+        }
+        .login-form {
+            padding: 2rem;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="text-center">Login to Your Account</h2>
+<div class="login-wrapper">
+    <div class="login-container">
+        <div class="login-image">
+            <h2>Welcome Back!</h2>
+            <p>Access your delivery service account and manage your orders with ease.</p>
+        </div>
+        <div class="login-form">
+            <div class="login-header">
+                <i class="fas fa-user-circle"></i>
+                <h2>Sign In</h2>
+                <p class="text-muted">Please login to your account</p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" action="{% url 'web-auth:login' %}">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Please correct the errors below.
+                    </div>
+                {% endif %}
+
+                <div class="form-floating">
+                    <input type="email" class="form-control" id="id_username" name="username" placeholder="Email" required>
+                    <label for="id_username">Email address</label>
                 </div>
-                <div class="card-body">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    
-                    <form method="post" class="needs-validation" novalidate>
-                        {% csrf_token %}
-                        
-                        {% if form.errors %}
-                            <div class="alert alert-danger">
-                                {% for field, errors in form.errors.items %}
-                                    {% for error in errors %}
-                                        <p>{{ error }}</p>
-                                    {% endfor %}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="username" name="username" 
-                                   value="{{ form.username.value|default:'' }}" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
-                            <label class="form-check-label" for="remember_me">Remember me</label>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Login</button>
-                        </div>
-                    </form>
+
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="id_password" name="password" placeholder="Password" required>
+                    <label for="id_password">Password</label>
                 </div>
-                <div class="card-footer text-center">
-                    <p class="mb-0">
-                        <a href="{% url 'password_reset' %}">Forgot your password?</a>
-                    </p>
-                    <p class="mb-0">
-                        Don't have an account? <a href="{% url 'register' %}">Register here</a>
-                    </p>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">Remember me</label>
+                    </div>
+                    <a href="{% url 'web-auth:password-reset' %}" class="forgot-password">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-login">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <p class="mb-3">Don't have an account? <a href="{% url 'web-auth:register' %}" class="register-link">Create Account</a></p>
+                
+                <div class="social-login">
+                    <p class="text-muted">Or continue with</p>
+                    <button type="button" class="btn btn-outline-primary">
+                        <i class="fab fa-google me-2"></i>Google
+                    </button>
+                    <button type="button" class="btn btn-outline-primary">
+                        <i class="fab fa-facebook me-2"></i>Facebook
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Focus on email field when page loads
+        document.getElementById('id_username').focus();
+        
+        // Add form validation with smooth animations
+        const form = document.querySelector('form');
+        const inputs = form.querySelectorAll('input');
+        
+        inputs.forEach(input => {
+            input.addEventListener('invalid', function(e) {
+                e.preventDefault();
+                this.classList.add('is-invalid');
+                this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+            
+            input.addEventListener('input', function() {
+                if (this.classList.contains('is-invalid')) {
+                    this.classList.remove('is-invalid');
+                }
+            });
+        });
+        
+        form.addEventListener('submit', function(event) {
+            const email = document.getElementById('id_username').value;
+            const password = document.getElementById('id_password').value;
+            
+            if (!email || !password) {
+                event.preventDefault();
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger';
+                alert.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please fill in all required fields.';
+                form.insertBefore(alert, form.firstChild);
+                
+                setTimeout(() => {
+                    alert.remove();
+                }, 3000);
+            }
+        });
+    });
+</script>
 {% endblock %} 
